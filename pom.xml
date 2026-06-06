@@ -19,8 +19,6 @@
 
     <properties>
         <java.version>17</java.version>
-        <docker.image.name>rest-app</docker.image.name>
-        <docker.host>tcp://192.168.1.69:2375</docker.host>
     </properties>
 
     <dependencies>
@@ -64,47 +62,11 @@
                         <version>3.5.0</version>
                         <executions>
                             <execution>
-                                <id>docker-build</id>
+                                <id>docker-deploy</id>
                                 <phase>package</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
-                                    <executable>docker</executable>
-                                    <commandlineArgs>-H ${docker.host} build -t ${docker.image.name} .</commandlineArgs>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-stop</id>
-                                <phase>package</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>docker</executable>
-                                    <commandlineArgs>-H ${docker.host} stop rest-app</commandlineArgs>
-                                    <successCodes>
-                                        <successCode>0</successCode>
-                                        <successCode>1</successCode>
-                                    </successCodes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-rm</id>
-                                <phase>package</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>docker</executable>
-                                    <commandlineArgs>-H ${docker.host} rm rest-app</commandlineArgs>
-                                    <successCodes>
-                                        <successCode>0</successCode>
-                                        <successCode>1</successCode>
-                                    </successCodes>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>docker-run</id>
-                                <phase>package</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>docker</executable>
-                                    <commandlineArgs>-H ${docker.host} run -d --name rest-app --restart unless-stopped -p 8080:8080 ${docker.image.name}</commandlineArgs>
+                                    <executable>deploy.bat</executable>
                                 </configuration>
                             </execution>
                         </executions>
@@ -119,11 +81,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <image>
-                        <name>${docker.image.name}</name>
-                    </image>
-                </configuration>
             </plugin>
 
         </plugins>
