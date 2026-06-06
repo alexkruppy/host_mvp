@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Host MVP — Video Streaming Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">Host MVP</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Browse</a>
+                <a href="/premium">Premium</a>
+                <div class="nav-auth" id="navAuth">
+                    <a href="/auth/login" class="btn btn-outline">Sign In</a>
+                    <a href="/auth/register" class="btn btn-primary">Get Started</a>
+                </div>
+                <div class="nav-user" id="navUser" style="display:none">
+                    <a href="/upload" class="btn btn-outline">Upload</a>
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">✨ Next-Gen Video Streaming</div>
+            <h1>Upload. Stream. Monetize.</h1>
+            <p>Professional video hosting with adaptive HLS streaming, premium subscriptions, and powerful analytics — all in one platform.</p>
+            <div class="hero-buttons">
+                <a href="/dashboard" class="btn btn-primary btn-lg">Browse Videos</a>
+                <a href="/auth/register" class="btn btn-outline btn-lg">Start Free</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">4K</div>
+                    <div class="hero-stat-label">Max Resolution</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">2GB</div>
+                    <div class="hero-stat-label">File Limit</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">HLS</div>
+                    <div class="hero-stat-label">Adaptive Streaming</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Host MVP?</h2>
+                <p>Everything you need to host and monetize your video content</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎬</div>
+                    <h3>HLS Adaptive Streaming</h3>
+                    <p>Automatic transcoding to HLS format ensures smooth playback on any device and network condition.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Upload up to 2GB</h3>
+                    <p>Upload large video files with progress tracking and automatic processing in the background.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h3>Premium Subscriptions</h3>
+                    <p>Monetize your content with Stripe-powered subscriptions. Set any video as premium-only.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Access Control</h3>
+                    <p>JWT-based authentication with role-based access control for free and premium content.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>HTTP Range Streaming</h3>
+                    <p>Progressive download with HTTP Range requests for instant playback without buffering.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>View Analytics</h3>
+                    <p>Track views and engagement for your content with built-in analytics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="video-section">
+        <div class="container">
+            <div class="video-section-header">
+                <h2>Recent Free Videos</h2>
+                <a href="/dashboard" class="section-link">View all →</a>
+            </div>
+            <div id="videoGrid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    Loading videos...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 Host MVP. All rights reserved. Powered by Spring Boot.</p>
+    </footer>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadFreeVideos();
+        });
+    </script>
+</body>
+</html>
