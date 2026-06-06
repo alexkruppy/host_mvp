@@ -118,9 +118,7 @@
                             <port>8080</port>
                         </ports>
                     </container>
-                    <dockerClient>
-                        <host>${docker.host}</host>
-                    </dockerClient>
+
                 </configuration>
             </plugin>
         </plugins>
