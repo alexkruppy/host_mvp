@@ -14,6 +14,7 @@
     <groupId>com.example</groupId>
     <artifactId>rest</artifactId>
     <version>1.0.0</version>
+    <packaging>war</packaging>
     <name>spring-rest</name>
     <description>Spring Boot REST API</description>
 
@@ -25,6 +26,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
