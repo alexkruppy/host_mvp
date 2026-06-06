@@ -1,12 +1,32 @@
 const API_BASE = 'http://localhost:8080';
 
+// ========== Toast Notifications ==========
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = { success: '✓', error: '✕', info: 'ℹ' };
+    toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(40px)';
+        toast.style.transition = '0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// ========== Token & User ==========
 function getToken() {
     return localStorage.getItem('token');
 }
 
 function getUser() {
-    const data = localStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
+    try {
+        const data = localStorage.getItem('user');
+        return data ? JSON.parse(data) : null;
+    } catch { return null; }
 }
 
 function updateAuthUI() {
@@ -31,9 +51,11 @@ function updateAuthUI() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/';
+    showToast('Logged out successfully', 'info');
+    setTimeout(() => { window.location.href = '/'; }, 500);
 }
 
+// ========== API Request ==========
 async function apiRequest(method, path, body, isFormData) {
     const url = API_BASE + path;
     const headers = {};
@@ -52,14 +74,27 @@ async function apiRequest(method, path, body, isFormData) {
         options.body = isFormData ? body : JSON.stringify(body);
     }
 
-    const response = await fetch(url, options);
+    let response;
+    try {
+        response = await fetch(url, options);
+    } catch (e) {
+        throw new Error('Network error — check your connection');
+    }
+
     if (!response.ok) {
-        const err = await response.text();
-        throw new Error(err || 'Request failed');
+        let errMsg;
+        try {
+            const err = await response.json();
+            errMsg = err.error || err.message || 'Request failed';
+        } catch {
+            errMsg = `Error ${response.status}`;
+        }
+        throw new Error(errMsg);
     }
     return response;
 }
 
+// ========== Auth ==========
 async function handleLogin(event) {
     event.preventDefault();
     const email = document.getElementById('email').value;
@@ -76,9 +111,11 @@ async function handleLogin(event) {
             role: data.role,
             premiumActive: data.premiumActive
         }));
-        window.location.href = '/dashboard';
+        showToast('Welcome back, ' + data.fullName + '!', 'success');
+        setTimeout(() => { window.location.href = '/dashboard'; }, 500);
     } catch (e) {
-        errorEl.textContent = 'Invalid email or password';
+        errorEl.style.display = 'block';
+        errorEl.textContent = '✕ ' + e.message;
     }
 }
 
@@ -99,15 +136,32 @@ async function handleRegister(event) {
             role: data.role,
             premiumActive: data.premiumActive
         }));
-        window.location.href = '/dashboard';
+        showToast('Account created! Welcome, ' + data.fullName, 'success');
+        setTimeout(() => { window.location.href = '/dashboard'; }, 500);
     } catch (e) {
-        errorEl.textContent = 'Registration failed. Email may already be in use.';
+        errorEl.style.display = 'block';
+        errorEl.textContent = '✕ ' + e.message;
     }
 }
 
+// ========== Videos ==========
 async function loadVideos(filter) {
     const grid = document.getElementById('videoGrid');
-    grid.innerHTML = '<div class="loading">Loading videos...</div>';
+    if (!grid) return;
+
+    grid.innerHTML = `
+        <div class="skeleton-grid" id="skeletonGrid">
+            ${Array(6).fill(0).map(() => `
+                <div class="skeleton-card">
+                    <div class="skeleton-thumb"></div>
+                    <div class="skeleton-body">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
 
     try {
         let path = '/api/videos';
@@ -118,7 +172,12 @@ async function loadVideos(filter) {
         const videos = await res.json();
         renderVideoGrid(grid, videos);
     } catch (e) {
-        grid.innerHTML = '<div class="loading">Failed to load videos</div>';
+        grid.innerHTML = `
+            <div class="loading">
+                <p style="color:var(--error);font-size:1.1rem">Failed to load videos</p>
+                <p style="color:var(--text-muted);margin-top:8px">${e.message}</p>
+            </div>
+        `;
     }
 }
 
@@ -131,32 +190,44 @@ async function loadFreeVideos() {
         const videos = await res.json();
         renderVideoGrid(grid, videos.slice(0, 6));
     } catch (e) {
-        grid.innerHTML = '<div class="loading">Failed to load videos</div>';
+        grid.innerHTML = '<div class="loading"><p style="color:var(--text-muted)">No videos available yet</p></div>';
     }
 }
 
 function renderVideoGrid(grid, videos) {
     if (!videos || videos.length === 0) {
-        grid.innerHTML = '<div class="loading">No videos available</div>';
+        grid.innerHTML = `
+            <div class="loading">
+                <p style="font-size:2rem;margin-bottom:12px">🎬</p>
+                <p style="color:var(--text-muted)">No videos available</p>
+            </div>
+        `;
         return;
     }
 
     grid.innerHTML = videos.map(v => `
         <div class="video-card" onclick="window.location.href='/watch/${v.id}'">
-            <div class="video-thumb">🎬</div>
-            <div class="video-info">
-                <h3>${escapeHtml(v.title)}</h3>
-                <div class="video-meta">
-                    <span>${v.uploadedBy || 'Unknown'}</span>
-                    <span class="video-badge ${v.premium ? 'badge-premium' : 'badge-free'}">
-                        ${v.premium ? 'PREMIUM' : 'FREE'}
-                    </span>
+            <div class="video-thumb">
+                🎬
+                <div class="video-play-overlay">
+                    <div class="play-icon">▶</div>
+                </div>
+                <span class="video-badge ${v.premium ? 'badge-premium' : 'badge-free'}">
+                    ${v.premium ? 'Premium' : 'Free'}
+                </span>
+            </div>
+            <div class="video-card-body">
+                <div class="video-card-title">${escapeHtml(v.title)}</div>
+                <div class="video-card-meta">
+                    <span class="video-card-author">${escapeHtml(v.uploadedBy || 'Unknown')}</span>
+                    <span class="video-card-views">${v.views || 0} views</span>
                 </div>
             </div>
         </div>
     `).join('');
 }
 
+// ========== Single Video ==========
 async function loadVideo(id) {
     const container = document.getElementById('watchContainer');
     if (!container) return;
@@ -165,12 +236,11 @@ async function loadVideo(id) {
         const res = await apiRequest('GET', `/api/videos/${id}`);
         const video = await res.json();
 
-        const isPremium = video.premium;
-        const user = getUser();
         const token = getToken();
+        const user = getUser();
         let canWatch = true;
 
-        if (isPremium) {
+        if (video.premium) {
             if (!token || !user || !user.premiumActive) {
                 canWatch = false;
             }
@@ -178,10 +248,12 @@ async function loadVideo(id) {
 
         if (!canWatch) {
             container.innerHTML = `
-                <div class="auth-card" style="margin:0 auto;text-align:center">
+                <div class="watch-premium-lock">
+                    <div class="watch-premium-lock-icon">💎</div>
                     <h2>Premium Content</h2>
-                    <p style="margin:16px 0;color:#999">This video requires a premium subscription.</p>
-                    <a href="/premium" class="btn btn-primary">Upgrade to Premium</a>
+                    <p>This video requires an active premium subscription.</p>
+                    <a href="/premium" class="btn btn-premium btn-lg">Upgrade to Premium</a>
+                    ${!token ? '<p style="margin-top:16px;color:var(--text-muted)"><a href="/auth/login">Sign in</a> to your account first</p>' : ''}
                 </div>
             `;
             return;
@@ -194,54 +266,82 @@ async function loadVideo(id) {
             hlsSource = `/api/stream/hls/${id}/index.m3u8`;
         }
 
-        // Increment views
         apiRequest('POST', `/api/videos/${id}/views`).catch(() => {});
 
-        let playerHtml;
-        if (hlsSource) {
-            playerHtml = `
-                <video id="videoPlayer" class="video-js vjs-big-play-centered vjs-16-9" controls preload="auto" data-setup='{"fluid":true}'>
-                    <source src="${hlsSource}" type="application/x-mpegURL">
-                    <p class="vjs-no-js">Video playback not supported</p>
-                </video>
-            `;
-        } else {
-            playerHtml = `
-                <video id="videoPlayer" class="video-js vjs-big-play-centered vjs-16-9" controls preload="auto" data-setup='{"fluid":true}'>
-                    <source src="${videoUrl}" type="${video.contentType || 'video/mp4'}">
-                    <p class="vjs-no-js">Video playback not supported</p>
-                </video>
-            `;
-        }
+        const formattedDate = video.uploadedAt ? new Date(video.uploadedAt).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric'
+        }) : '';
 
         container.innerHTML = `
-            ${playerHtml}
-            <div class="video-details">
-                <h1>${escapeHtml(video.title)}</h1>
-                <div class="meta">
-                    Uploaded by ${escapeHtml(video.uploadedBy || 'Unknown')} |
-                    ${video.views || 0} views |
-                    ${video.duration ? Math.round(video.duration) + 's' : ''}
-                    ${video.premium ? '| <span class="video-badge badge-premium">PREMIUM</span>' : ''}
+            <div class="watch-player-wrapper">
+                <video id="videoPlayer" class="video-js vjs-big-play-centered" controls preload="auto" data-setup='{"fluid":true,"controls":true,"autoplay":false}'>
+                    <source src="${hlsSource || videoUrl}" type="${hlsSource ? 'application/x-mpegURL' : (video.contentType || 'video/mp4')}">
+                </video>
+            </div>
+            <div class="watch-details">
+                <h1 class="watch-title">${escapeHtml(video.title)}</h1>
+                <div class="watch-meta">
+                    <span class="watch-meta-item">👤 ${escapeHtml(video.uploadedBy || 'Unknown')}</span>
+                    <span class="watch-meta-divider"></span>
+                    <span class="watch-meta-item">👁 ${video.views || 0} views</span>
+                    ${video.duration ? `<span class="watch-meta-divider"></span><span class="watch-meta-item">⏱ ${formatDuration(video.duration)}</span>` : ''}
+                    ${formattedDate ? `<span class="watch-meta-divider"></span><span class="watch-meta-item">📅 ${formattedDate}</span>` : ''}
+                    ${video.premium ? `<span class="watch-meta-divider"></span><span class="video-badge badge-premium" style="position:static;font-size:0.75rem">Premium</span>` : ''}
                 </div>
-                ${video.description ? '<p>' + escapeHtml(video.description) + '</p>' : ''}
+                ${video.description ? `<div class="watch-description">${escapeHtml(video.description)}</div>` : ''}
             </div>
         `;
 
-        // Initialize Video.js
         if (typeof videojs !== 'undefined') {
-            videojs('videoPlayer', {
-                html5: {
-                    hls: {
-                        overrideNative: true
-                    }
-                }
+            const player = videojs('videoPlayer', {
+                html5: { hls: { overrideNative: true } }
+            });
+            player.ready(() => {
+                showToast('Press play to start watching', 'info');
             });
         }
 
     } catch (e) {
-        container.innerHTML = '<div class="loading">Failed to load video</div>';
+        container.innerHTML = `
+            <div class="loading">
+                <p style="color:var(--error);font-size:1.1rem">Failed to load video</p>
+                <p style="color:var(--text-muted);margin-top:8px">${escapeHtml(e.message)}</p>
+            </div>
+        `;
     }
+}
+
+function formatDuration(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    if (m >= 60) {
+        const h = Math.floor(m / 60);
+        return `${h}h ${m % 60}m`;
+    }
+    return `${m}m ${s}s`;
+}
+
+// ========== Upload ==========
+function onFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const display = document.getElementById('fileNameDisplay');
+    const text = document.getElementById('fileNameText');
+    const zone = document.getElementById('fileDropZone');
+    if (display && text) {
+        text.textContent = `📄 ${file.name} (${(file.size / (1024*1024)).toFixed(1)} MB)`;
+        display.classList.add('show');
+        if (zone) zone.style.display = 'none';
+    }
+}
+
+function clearFile() {
+    const input = document.getElementById('file');
+    if (input) input.value = '';
+    const display = document.getElementById('fileNameDisplay');
+    const zone = document.getElementById('fileDropZone');
+    if (display) display.classList.remove('show');
+    if (zone) zone.style.display = 'block';
 }
 
 async function handleUpload(event) {
@@ -254,19 +354,24 @@ async function handleUpload(event) {
     const progress = document.getElementById('uploadProgress');
     const progressFill = document.getElementById('progressFill');
     const progressText = document.getElementById('progressText');
+    const uploadBtn = document.getElementById('uploadBtn');
 
     if (!file) {
-        errorEl.textContent = 'Please select a file';
+        errorEl.style.display = 'block';
+        errorEl.textContent = '✕ Please select a file';
         return;
     }
 
     if (file.size > 2 * 1024 * 1024 * 1024) {
-        errorEl.textContent = 'File exceeds 2GB limit';
+        errorEl.style.display = 'block';
+        errorEl.textContent = '✕ File exceeds 2GB limit';
         return;
     }
 
-    errorEl.textContent = '';
+    errorEl.style.display = 'none';
     progress.style.display = 'block';
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
 
     const formData = new FormData();
     formData.append('file', file);
@@ -276,35 +381,46 @@ async function handleUpload(event) {
 
     try {
         const token = getToken();
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-                const pct = Math.round((e.loaded / e.total) * 100);
-                progressFill.style.width = pct + '%';
-                progressText.textContent = `Uploading... ${pct}%`;
-            }
-        };
-
         await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    progressFill.style.width = pct + '%';
+                    progressText.textContent = `Uploading... ${pct}%`;
+                }
+            };
             xhr.open('POST', API_BASE + '/api/videos/upload');
             xhr.setRequestHeader('Authorization', 'Bearer ' + token);
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) resolve();
-                else reject(new Error(xhr.responseText));
+                else {
+                    try {
+                        const err = JSON.parse(xhr.responseText);
+                        reject(new Error(err.error || 'Upload failed'));
+                    } catch {
+                        reject(new Error('Upload failed (' + xhr.status + ')'));
+                    }
+                }
             };
-            xhr.onerror = () => reject(new Error('Upload failed'));
+            xhr.onerror = () => reject(new Error('Network error during upload'));
             xhr.send(formData);
         });
 
-        progressText.textContent = 'Upload complete! Video is being processed.';
+        progressFill.style.width = '100%';
+        progressText.textContent = '✅ Upload complete! Processing video...';
+        showToast('Video uploaded successfully! Processing HLS...', 'success');
         setTimeout(() => { window.location.href = '/dashboard'; }, 2000);
     } catch (e) {
         progress.style.display = 'none';
-        errorEl.textContent = 'Upload failed: ' + e.message;
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Upload Video';
+        errorEl.style.display = 'block';
+        errorEl.textContent = '✕ ' + e.message;
     }
 }
 
+// ========== Stripe ==========
 async function createCheckoutSession() {
     try {
         const res = await apiRequest('POST', '/api/payments/create-checkout-session');
@@ -313,7 +429,21 @@ async function createCheckoutSession() {
             window.location.href = data.url;
         }
     } catch (e) {
-        alert('Failed to create checkout session. Please try again.');
+        showToast(e.message, 'error');
+    }
+}
+
+// ========== UI Helpers ==========
+function setActiveTab(filter) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const tab = document.querySelector(`[onclick*="loadVideos('${filter}'"]`) ||
+                document.querySelector(`[onclick*='loadVideos("${filter}"']`);
+    if (!tab) {
+        document.querySelectorAll('.tab').forEach(t => {
+            if (t.textContent.toLowerCase() === filter) t.classList.add('active');
+        });
+    } else {
+        tab.classList.add('active');
     }
 }
 
@@ -323,8 +453,28 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function setActiveTab(filter) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    const tab = document.querySelector(`[onclick="loadVideos('${filter}')"]`);
-    if (tab) tab.classList.add('active');
-}
+// ========== File Drop Zone ==========
+document.addEventListener('DOMContentLoaded', () => {
+    const zone = document.getElementById('fileDropZone');
+    if (zone) {
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            zone.classList.add('dragover');
+        });
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('dragover');
+        });
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            zone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                document.getElementById('file').files = files;
+                onFileSelect({ target: { files: [files[0]] } });
+            }
+        });
+        zone.addEventListener('click', () => {
+            document.getElementById('file').click();
+        });
+    }
+});

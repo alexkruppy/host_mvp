@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload - StreamVid</title>
+    <title>Upload Video — Host MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">StreamVid</a>
+            <a href="/" class="nav-brand">Host MVP</a>
             <div class="nav-links">
                 <a href="/">Home</a>
                 <a href="/dashboard">Browse</a>
@@ -22,42 +25,55 @@
         </div>
     </nav>
 
-    <div class="container">
+    <div class="upload-page">
         <div class="upload-container">
-            <h1>Upload Video</h1>
+            <div class="upload-header">
+                <h1>Upload Video</h1>
+                <p>Share your content with the world — MP4, up to 2GB</p>
+            </div>
             <div class="upload-card">
                 <form id="uploadForm" onsubmit="handleUpload(event)">
                     <div class="form-group">
-                        <label for="title">Title</label>
-                        <input type="text" id="title" name="title" required>
+                        <label class="form-label" for="title">Title</label>
+                        <input class="form-input" type="text" id="title" name="title" placeholder="Enter video title" required>
                     </div>
                     <div class="form-group">
-                        <label for="description">Description</label>
-                        <textarea id="description" name="description" rows="4"></textarea>
+                        <label class="form-label" for="description">Description</label>
+                        <textarea class="form-input" id="description" name="description" placeholder="Describe your video..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="file">Video File (max 2GB)</label>
-                        <input type="file" id="file" name="file" accept="video/*" required>
+                        <label class="form-label">Video File</label>
+                        <div class="file-drop-zone" id="fileDropZone">
+                            <div class="file-drop-zone-icon">📁</div>
+                            <div class="file-drop-zone-text">Drop your video here or <strong>browse</strong></div>
+                            <div class="file-drop-zone-hint">MP4, WebM, AVI — max 2GB</div>
+                            <input type="file" id="file" name="file" accept="video/*" onchange="onFileSelect(event)">
+                        </div>
+                        <div class="file-name-display" id="fileNameDisplay">
+                            <span id="fileNameText"></span>
+                            <button type="button" class="remove-file" onclick="clearFile()">✕</button>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label class="checkbox-label">
+                        <label class="checkbox-group">
                             <input type="checkbox" id="premium" name="premium">
-                            Premium content (subscribers only)
+                            <span class="checkbox-label">Premium content — subscribers only</span>
                         </label>
                     </div>
                     <div class="upload-progress" id="uploadProgress" style="display:none">
                         <div class="progress-bar">
                             <div class="progress-fill" id="progressFill"></div>
                         </div>
-                        <p id="progressText">Uploading...</p>
+                        <div class="progress-text" id="progressText">Uploading...</div>
                     </div>
-                    <div class="form-error" id="uploadError"></div>
-                    <button type="submit" class="btn btn-primary btn-block">Upload</button>
+                    <div class="form-error" id="uploadError" style="display:none"></div>
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="uploadBtn">Upload Video</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <div class="toast-container" id="toastContainer"></div>
     <script src="/js/app.js"></script>
 </body>
 </html>

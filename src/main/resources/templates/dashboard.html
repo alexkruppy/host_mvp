@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse - StreamVid</title>
+    <title>Browse — Host MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <link href="https://vjs.zencdn.net/8.16.1/video-js.css" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="/" class="nav-brand">StreamVid</a>
+            <a href="/" class="nav-brand">Host MVP</a>
             <div class="nav-links">
                 <a href="/">Home</a>
                 <a href="/dashboard">Browse</a>
                 <a href="/premium">Premium</a>
                 <div class="nav-auth" id="navAuth">
-                    <a href="/auth/login" class="btn btn-outline">Login</a>
-                    <a href="/auth/register" class="btn btn-primary">Register</a>
+                    <a href="/auth/login" class="btn btn-outline">Sign In</a>
+                    <a href="/auth/register" class="btn btn-primary">Get Started</a>
                 </div>
                 <div class="nav-user" id="navUser" style="display:none">
                     <a href="/upload" class="btn btn-outline">Upload</a>
@@ -28,21 +30,26 @@
         </div>
     </nav>
 
-    <div class="container">
-        <div class="dashboard-header">
-            <h1>Browse Videos</h1>
-            <div class="filter-tabs">
-                <button class="tab active" onclick="loadVideos('all')">All</button>
-                <button class="tab" onclick="loadVideos('free')">Free</button>
-                <button class="tab" onclick="loadVideos('premium')">Premium</button>
+    <div class="dashboard-page">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Browse Videos</h1>
+                <div class="filter-tabs">
+                    <button class="tab active" onclick="loadVideos('all'); setActiveTab('all')">All</button>
+                    <button class="tab" onclick="loadVideos('free'); setActiveTab('free')">Free</button>
+                    <button class="tab" onclick="loadVideos('premium'); setActiveTab('premium')">Premium</button>
+                </div>
             </div>
-        </div>
-        <div class="video-grid" id="videoGrid">
-            <div class="loading">Loading videos...</div>
+            <div class="video-grid" id="videoGrid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    Loading videos...
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
+    <div class="toast-container" id="toastContainer"></div>
     <script src="/js/app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
