@@ -14,8 +14,8 @@
     <groupId>com.example</groupId>
     <artifactId>rest</artifactId>
     <version>1.0.0</version>
-    <name>spring-rest</name>
-    <description>Video Streaming Platform with HLS, JWT Auth, Stripe Payments</description>
+    <name>host_mvp</name>
+    <description>Host MVP — Video Streaming Platform with HLS, JWT Auth, Stripe Payments</description>
 
     <properties>
         <java.version>17</java.version>
