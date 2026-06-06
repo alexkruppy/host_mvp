@@ -99,32 +99,6 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>docker-deploy</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.5.0</version>
-                        <executions>
-                            <execution>
-                                <id>docker-deploy</id>
-                                <phase>package</phase>
-                                <goals><goal>exec</goal></goals>
-                                <configuration>
-                                    <executable>powershell</executable>
-                                    <commandlineArgs>-ExecutionPolicy Bypass -File deploy.ps1</commandlineArgs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
