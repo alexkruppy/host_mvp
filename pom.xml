@@ -66,7 +66,8 @@
                                 <phase>package</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
-                                    <executable>deploy.bat</executable>
+                                    <executable>powershell</executable>
+                                    <commandlineArgs>-ExecutionPolicy Bypass -File deploy.ps1</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
