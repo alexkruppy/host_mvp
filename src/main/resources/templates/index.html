@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamVid - Video Streaming Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://vjs.zencdn.net/8.16.1/video-js.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">StreamVid</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Browse</a>
+                <a href="/premium">Premium</a>
+                <div class="nav-auth" id="navAuth">
+                    <a href="/auth/login" class="btn btn-outline">Login</a>
+                    <a href="/auth/register" class="btn btn-primary">Register</a>
+                </div>
+                <div class="nav-user" id="navUser" style="display:none">
+                    <a href="/upload" class="btn btn-outline">Upload</a>
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Welcome to StreamVid</h1>
+            <p>Upload, stream, and share your videos with adaptive HLS streaming.</p>
+            <div class="hero-buttons">
+                <a href="/dashboard" class="btn btn-primary btn-lg">Browse Videos</a>
+                <a href="/auth/register" class="btn btn-outline btn-lg">Get Started</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>HLS Streaming</h3>
+                    <p>Adaptive bitrate streaming with HLS for smooth playback on any device.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Upload Videos</h3>
+                    <p>Upload videos up to 2GB with automatic transcoding to HLS format.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Premium Content</h3>
+                    <p>Monetize your content with premium subscriptions via Stripe.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="video-section">
+        <div class="container">
+            <h2>Recent Free Videos</h2>
+            <div class="video-grid" id="videoGrid">
+                <div class="loading">Loading videos...</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2024 StreamVid. All rights reserved.</p>
+    </footer>
+
+    <script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadFreeVideos();
+        });
+    </script>
+</body>
+</html>

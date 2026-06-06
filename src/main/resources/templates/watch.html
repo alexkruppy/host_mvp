@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch - StreamVid</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://vjs.zencdn.net/8.16.1/video-js.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">StreamVid</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Browse</a>
+                <a href="/premium">Premium</a>
+                <div class="nav-auth" id="navAuth">
+                    <a href="/auth/login" class="btn btn-outline">Login</a>
+                    <a href="/auth/register" class="btn btn-primary">Register</a>
+                </div>
+                <div class="nav-user" id="navUser" style="display:none">
+                    <a href="/upload" class="btn btn-outline">Upload</a>
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="watch-container" id="watchContainer">
+            <div class="loading">Loading video...</div>
+        </div>
+    </div>
+
+    <script src="https://vjs.zencdn.net/8.16.1/video.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        const videoId = window.location.pathname.split('/').pop();
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            loadVideo(videoId);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium - StreamVid</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">StreamVid</a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/dashboard">Browse</a>
+                <a href="/premium">Premium</a>
+                <div class="nav-auth" id="navAuth">
+                    <a href="/auth/login" class="btn btn-outline">Login</a>
+                    <a href="/auth/register" class="btn btn-primary">Register</a>
+                </div>
+                <div class="nav-user" id="navUser" style="display:none">
+                    <a href="/upload" class="btn btn-outline">Upload</a>
+                    <span id="userName"></span>
+                    <button onclick="logout()" class="btn btn-outline">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="premium-container">
+        <div class="premium-hero">
+            <h1>Upgrade to Premium</h1>
+            <p class="premium-subtitle">Get unlimited access to all premium content</p>
+            <div class="premium-card">
+                <div class="premium-price">
+                    <span class="price">$9.99</span>
+                    <span class="period">/month</span>
+                </div>
+                <ul class="premium-features">
+                    <li>Access all premium videos</li>
+                    <li>Ad-free experience</li>
+                    <li>HD & 4K streaming</li>
+                    <li>Cancel anytime</li>
+                </ul>
+                <button onclick="createCheckoutSession()" class="btn btn-primary btn-lg btn-block" id="subscribeBtn">
+                    Subscribe Now
+                </button>
+                <p class="premium-login-note" id="loginNote" style="display:none">
+                    <a href="/auth/login">Login</a> to subscribe
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            const token = getToken();
+            if (!token) {
+                document.getElementById('subscribeBtn').style.display = 'none';
+                document.getElementById('loginNote').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
