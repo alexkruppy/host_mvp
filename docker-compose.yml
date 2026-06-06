@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: host_mvp
       POSTGRES_USER: hostmvp
-      POSTGRES_PASSWORD: hostmvp_pass
+      POSTGRES_PASSWORD: pass
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/host_mvp
       SPRING_DATASOURCE_USERNAME: hostmvp
-      SPRING_DATASOURCE_PASSWORD: hostmvp_pass
+      SPRING_DATASOURCE_PASSWORD: pass
       APP_BASE_URL: http://192.168.1.69:8081
     volumes:
       - uploads:/app/uploads
