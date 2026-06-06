@@ -20,6 +20,7 @@
     <properties>
         <java.version>17</java.version>
         <docker.image.name>rest-app</docker.image.name>
+        <docker.host>tcp://192.168.1.69:2375</docker.host>
     </properties>
 
     <dependencies>
@@ -58,30 +59,52 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>com.google.cloud.tools</groupId>
-                        <artifactId>jib-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals><goal>dockerBuild</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>3.5.0</version>
                         <executions>
                             <execution>
-                                <id>docker-deploy</id>
+                                <id>docker-build</id>
                                 <phase>package</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
-                                    <executable>deploy.bat</executable>
+                                    <executable>docker</executable>
+                                    <commandlineArgs>-H ${docker.host} build -t ${docker.image.name} .</commandlineArgs>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-stop</id>
+                                <phase>package</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <commandlineArgs>-H ${docker.host} stop rest-app</commandlineArgs>
                                     <successCodes>
                                         <successCode>0</successCode>
                                         <successCode>1</successCode>
                                     </successCodes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-rm</id>
+                                <phase>package</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <commandlineArgs>-H ${docker.host} rm rest-app</commandlineArgs>
+                                    <successCodes>
+                                        <successCode>0</successCode>
+                                        <successCode>1</successCode>
+                                    </successCodes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>docker-run</id>
+                                <phase>package</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <commandlineArgs>-H ${docker.host} run -d --name rest-app --restart unless-stopped -p 8080:8080 ${docker.image.name}</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
@@ -102,25 +125,7 @@
                     </image>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.4.4</version>
-                <configuration>
-                    <to>
-                        <image>${docker.image.name}</image>
-                    </to>
-                    <container>
-                        <jvmFlags>
-                            <jvmFlag>-Dspring.profiles.active=postgres</jvmFlag>
-                        </jvmFlags>
-                        <ports>
-                            <port>8080</port>
-                        </ports>
-                    </container>
 
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>
