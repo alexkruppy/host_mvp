@@ -2,3 +2,5 @@ target/
 *.jar
 *.war
 *.class
+plink.exe
+pscp.exe

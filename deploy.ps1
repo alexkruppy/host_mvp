@@ -19,20 +19,21 @@ if (!(Test-Path $Pscp)) {
     Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/pscp.exe" -OutFile $Pscp -UseBasicParsing
 }
 
-$common = @("-pw", $Password, "-t", "-hostkey", "ssh-ed25519 255 SHA256:yiTVPVTA3WVXb9RKzasGQQ4vrjBMFqTfCS7U8NmfATg")
+$commonPlink = @("-pw", $Password, "-t", "-hostkey", "ssh-ed25519 255 SHA256:yiTVPVTA3WVXb9RKzasGQQ4vrjBMFqTfCS7U8NmfATg")
+$commonPscp = @("-pw", $Password, "-hostkey", "ssh-ed25519 255 SHA256:yiTVPVTA3WVXb9RKzasGQQ4vrjBMFqTfCS7U8NmfATg")
 
-Write-Host "=== Adding user to docker group ==="
-& $Plink $common "${VmUser}@${VmHost}" "echo $Password | sudo -S usermod -aG docker $VmUser" 2>&1 | Out-Null
+Write-Host "=== Add user to docker group (password needed once) ==="
+& $Plink $commonPlink "${VmUser}@${VmHost}" "echo $Password | sudo -S usermod -aG docker $VmUser" 2>&1 | Out-Null
 
 Write-Host "=== Creating remote directory ==="
-& $Plink $common "${VmUser}@${VmHost}" "mkdir -p /tmp/rest-deploy"
+& $Plink $commonPlink "${VmUser}@${VmHost}" "mkdir -p /tmp/rest-deploy"
 
 Write-Host "=== Copying files to VM ==="
-& $Pscp $common "$JarPath" "${VmUser}@${VmHost}:/tmp/rest-deploy/app.jar"
-& $Pscp $common Dockerfile "${VmUser}@${VmHost}:/tmp/rest-deploy/"
-& $Pscp $common deploy.sh "${VmUser}@${VmHost}:/tmp/rest-deploy/"
+& $Pscp $commonPscp "$JarPath" "${VmUser}@${VmHost}:/tmp/rest-deploy/app.jar"
+& $Pscp $commonPscp Dockerfile "${VmUser}@${VmHost}:/tmp/rest-deploy/"
+& $Pscp $commonPscp deploy.sh "${VmUser}@${VmHost}:/tmp/rest-deploy/"
 
-Write-Host "=== Reconnecting to apply docker group ==="
-& $Plink $common "${VmUser}@${VmHost}" "newgrp docker && cd /tmp/rest-deploy && chmod +x deploy.sh && ./deploy.sh"
+Write-Host "=== Building and running on VM ==="
+& $Plink $commonPlink "${VmUser}@${VmHost}" "cd /tmp/rest-deploy && chmod +x deploy.sh && echo $Password | sudo -S docker build -t rest-app . && echo $Password | sudo -S docker stop rest-app 2>/dev/null; echo $Password | sudo -S docker rm rest-app 2>/dev/null; echo $Password | sudo -S docker run -d --name rest-app --restart unless-stopped -p 8081:8080 rest-app"
 
 Write-Host "=== Done! http://${VmHost}:8081 ==="
