@@ -1,5 +1,3 @@
-param([switch]$pushOnly)
-
 $VM_USER = "vboxuser"
 $VM_HOST = "192.168.1.69"
 $VM_PASS = "bloodmaniac"
@@ -9,14 +7,12 @@ $TAR_FILE = "host_mvp-image.tar"
 $PLINK = ".\plink.exe"
 $PSCP = ".\pscp.exe"
 
-if (-not $pushOnly) {
-    Write-Host "=== Building Docker image ==="
-    docker compose build
-    if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
-}
+Write-Host "=== Building Docker image ==="
+docker compose build
+if ($LASTEXITCODE -ne 0) { throw "Docker build failed" }
 
 Write-Host "=== Saving image ==="
-& docker save $IMAGE_NAME -o $TAR_FILE
+docker save $IMAGE_NAME -o $TAR_FILE
 if ($LASTEXITCODE -ne 0) { throw "Docker save failed" }
 
 Write-Host "=== Creating directory on VM ==="
@@ -25,9 +21,8 @@ if ($LASTEXITCODE -ne 0) { throw "Failed to create directory on VM" }
 
 Write-Host "=== Copying files to VM ==="
 & $PSCP -pw $VM_PASS $TAR_FILE "${VM_USER}@${VM_HOST}:$VM_DIR/"
-if ($LASTEXITCODE -ne 0) { throw "SCP tar failed" }
 & $PSCP -pw $VM_PASS docker-compose.yml "${VM_USER}@${VM_HOST}:$VM_DIR/"
-if ($LASTEXITCODE -ne 0) { throw "SCP compose failed" }
+if ($LASTEXITCODE -ne 0) { throw "SCP failed" }
 
 Write-Host "=== Loading image and starting containers on VM ==="
 & $PLINK -ssh -pw $VM_PASS "${VM_USER}@${VM_HOST}" "cd $VM_DIR && docker load -i $TAR_FILE && docker compose up -d"

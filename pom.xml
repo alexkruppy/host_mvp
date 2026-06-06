@@ -101,39 +101,17 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.45.1</version>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>spring_rest-app:latest</name>
-                                    <build>
-                                        <dockerFile>${project.basedir}/Dockerfile</dockerFile>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>build-image</id>
-                                <phase>package</phase>
-                                <goals><goal>build</goal></goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <version>3.5.0</version>
                         <executions>
                             <execution>
-                                <id>push-to-vm</id>
+                                <id>docker-deploy</id>
                                 <phase>package</phase>
                                 <goals><goal>exec</goal></goals>
                                 <configuration>
                                     <executable>powershell</executable>
-                                    <commandlineArgs>-ExecutionPolicy Bypass -File deploy.ps1 -pushOnly</commandlineArgs>
+                                    <commandlineArgs>-ExecutionPolicy Bypass -File deploy.ps1</commandlineArgs>
                                 </configuration>
                             </execution>
                         </executions>
